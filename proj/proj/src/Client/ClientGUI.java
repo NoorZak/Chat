@@ -1,0 +1,594 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Client;
+import Menu.Menu1;
+import javax.swing.*;
+import java.util.*;
+import java.awt.*;
+import java.io.*;
+import java.sql.*;
+import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author skynet
+ */
+public class ClientGUI extends javax.swing.JFrame {
+
+    
+    
+        
+        private static ClientThread clientThread;
+	public static String userName = "Anonymous";
+	public static Socket SOCK;
+	public static ObjectOutputStream output;
+        public static   Connection conn;
+    
+        public static Statement myStm;
+        public static ResultSet myRs;
+    
+        public static ResultSet myRs1;
+        public  static ArrayList<String> onlineUsers = new ArrayList();
+        public  static ArrayList<String> createdUsers = new ArrayList();
+        public static ImageIcon icon = new ImageIcon("D:\\New:\new.jpg");
+        ArrayList <String> StatusArr= new ArrayList(); 
+    	
+
+    /**
+     * Creates new form ClientGUI
+     */
+        
+    public ClientGUI() throws SQLException, ClassNotFoundException {
+        initComponents();
+        
+           ImageIcon icon =new ImageIcon( new ImageIcon("D:\\New\\new.jpg").getImage().getScaledInstance(100, 100, Image.SCALE_DEFAULT));
+       ImageIcon icon1 =new ImageIcon( new ImageIcon("D:\\New\\chat-1873536_960_720.png").getImage().getScaledInstance(100, 100, Image.SCALE_DEFAULT));
+       
+       jLabel6.setIcon(icon);
+       jLabel7.setIcon(icon1);
+    
+    
+   
+       logIn();
+  
+    }
+    
+   
+    
+    
+    
+	
+        public static void logIn () throws SQLException, ClassNotFoundException{
+        
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+              conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/proj?useTimezone=true&serverTimezone=UTC","root","root");
+ 
+               createdUsers.clear();
+               onlineUsers.clear();
+               myStm=conn.createStatement();
+               ResultSet myRs = myStm.executeQuery("select * from User");
+ 
+   while (myRs.next()){
+    createdUsers.add(myRs.getString("name"));
+                      }
+
+
+    userName = (String)JOptionPane.showInputDialog(null, "SelectYourName", 
+                "Choices", JOptionPane.QUESTION_MESSAGE, icon, createdUsers.toArray(), createdUsers.toArray()[0]);
+
+       if(!userName.equals("")){
+           userName = userName.trim();
+                 
+    String pass = JOptionPane.showInputDialog("Enter Password");
+           
+           
+           
+    myStm=conn.createStatement();
+ 
+    String sqlSelect= "select * from User where name ='"+userName+"' and password ='"+pass+"'";
+           
+    ResultSet rs = myStm.executeQuery(sqlSelect);
+    
+    if( !rs.next()){ JOptionPane.showMessageDialog(null, "Not You Password" );//if there is no results 
+   logIn();
+   }
+   
+   else{
+
+       myStm=conn.createStatement();
+  
+       String sqlInsert = "insert into onlineusers (name,password)values ('"+userName+"','"+pass+"')";
+   
+   try {
+       
+      
+       
+   if(myStm.executeUpdate(sqlInsert)==1)
+   {       myStm=conn.createStatement();
+ 
+        String sqlSelect2= "select * from chat where name ='"+userName+"'";
+           
+        ResultSet rs2 = myStm.executeQuery(sqlSelect2);
+ while (rs2.next()) {
+    String data = rs2.getString("txt");
+    chatTxt.append(data+"\n");
+   }
+    
+ // To fill All Online Users
+  myStm=conn.createStatement();
+  ResultSet myRs3 = myStm.executeQuery("select * from onlineusers");
+ 
+   while (myRs3.next()){
+    onlineUsers.add(myRs3.getString("name"));
+                      }
+
+      	jLabel3.setText("ChatRoom - "+userName);
+        
+        msgTxt.requestFocus();
+        Connect();
+    
+   }}   
+   
+   catch(SQLException e){
+   JOptionPane.showMessageDialog(null,"Online User!!!!","warning",JOptionPane.ERROR_MESSAGE);
+   logIn();
+   
+   }
+    }
+        }
+       
+       else 
+
+			JOptionPane.showMessageDialog(null, "Please Enter a name!");
+	
+        }	
+	
+	
+	
+	
+	public static void Connect(){
+		
+		try{
+			final int port = 5555;
+			SOCK = new Socket(InetAddress.getLocalHost(),port);
+			
+			clientThread = new ClientThread(SOCK);
+			
+			//sending UserName
+			output = new ObjectOutputStream(SOCK.getOutputStream());
+			try{
+				output.writeObject(userName);
+				output.flush();
+			}catch(IOException ioException){
+				JOptionPane.showMessageDialog(null, "Error - UserName not Sent!");
+			}
+			
+			
+			Thread X = new Thread(clientThread);
+			X.start();
+			
+			
+		}
+		catch(Exception x){
+			System.out.println(x);
+			JOptionPane.showMessageDialog(null, "Server Not Responding");
+			System.exit(0);
+		}
+	}
+	
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        chatTxt = new javax.swing.JTextArea();
+        msgTxt = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        offlineusersList = new javax.swing.JList();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        onlineList = new javax.swing.JList();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        chatTxt.setColumns(20);
+        chatTxt.setRows(5);
+        jScrollPane1.setViewportView(chatTxt);
+
+        jButton1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jButton1.setText("SEND");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel2.setText("MSG");
+
+        jButton2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jButton2.setText("Logout");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jButton3.setText("Change Theme");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 451, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jButton2)
+                                .addGap(25, 25, 25)
+                                .addComponent(jButton3))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(msgTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jButton1))))))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(32, 32, 32)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(msgTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+                        .addGap(5, 5, 5))))
+        );
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel1.setText("Chat");
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel5.setText("OfflineUsers");
+
+        offlineusersList.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        offlineusersList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        offlineusersList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                offlineusersListMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(offlineusersList);
+
+        onlineList.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        onlineList.setForeground(new java.awt.Color(0, 204, 102));
+        onlineList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        onlineList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                onlineListMouseClicked(evt);
+            }
+        });
+        jScrollPane4.setViewportView(onlineList);
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel4.setText("Online Users");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(42, 42, 42)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(32, 32, 32))))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(41, 41, 41)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addComponent(jLabel5)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(9, 9, 9)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+            try {
+                // TODO add your handling code here:
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                
+                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/proj?useTimezone=true&serverTimezone=UTC","root","root");
+                
+                int result = JOptionPane.showConfirmDialog(null, "Are you sure","Confirm",JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
+                
+                if(result == JOptionPane.YES_OPTION){
+                  
+                        output.close();
+                        clientThread.in.close();
+                        SOCK.close();
+                        Statement myStm = conn.createStatement();
+ 
+                myStm.executeUpdate("delete from onlineusers where name='"+userName+"'");
+                
+        
+                    }
+                
+                else{
+                   
+                }
+            }
+                catch (IOException e1) {
+                        e1.printStackTrace();
+                    } catch (SQLException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+                    
+                    
+                    System.exit(0);
+          			 
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        if(!msgTxt.getText().equals("")){
+            try {
+                clientThread.SEND(msgTxt.getText());
+                
+            
+            } catch (IOException ex) {
+             System.out.print(ex.getMessage());}
+            
+            offlineusersList.clearSelection();
+            onlineList.clearSelection();
+            msgTxt.requestFocus();
+		
+            msgTxt.setText("");
+                	        
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void offlineusersListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_offlineusersListMouseClicked
+        // TODO add your handling code here:
+        		if (evt.getClickCount()==2)
+        SwingUtilities.invokeLater(
+				new Runnable(){
+					public void run() {
+			
+        	final String selectedUser = (String) offlineusersList.getSelectedValue();
+                msgTxt.setText("@" + selectedUser + ": ");
+		msgTxt.requestFocus();
+                
+                                        }
+				}
+			); 
+
+                        
+    }//GEN-LAST:event_offlineusersListMouseClicked
+
+    private void onlineListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_onlineListMouseClicked
+        // TODO add your handling code here:
+
+        if (evt.getClickCount()==2)
+        
+        {	msgTxt.setText("");
+                final String selectedUser = (String) onlineList.getSelectedValue();
+                msgTxt.setText("@" + selectedUser + ": ");
+		msgTxt.requestFocus();
+                
+        }
+
+    }//GEN-LAST:event_onlineListMouseClicked
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        
+               String[] themes = {"theme1", "theme2", "theme3","theme4"};
+      
+           String t = (String)JOptionPane.showInputDialog(null, "Enter Your Choice??", 
+                "Choices", JOptionPane.QUESTION_MESSAGE, icon, themes, themes[0]);
+               
+               
+       try{        
+       com.jtattoo.plaf.acryl.AcrylLookAndFeel.setTheme("Green", "INSERT YOUR LICENSE KEY HERE", "Company");
+        if(t.equals("theme1")){
+        UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+				              
+        }
+        
+        else if(t.equals("theme2")){
+        UIManager.setLookAndFeel("com.jtattoo.plaf.acryl.AcrylLookAndFeel");
+				                   
+        }
+        
+        else if (t.equals("theme3")){
+        UIManager.setLookAndFeel("com.jtattoo.plaf.texture.TextureLookAndFeel");
+				        }
+        
+        else if (t.equals("theme4")){
+            UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
+				
+        }
+           
+      
+           } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedLookAndFeelException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+       		SwingUtilities.updateComponentTreeUI(this); // To Change Theme
+
+    }//GEN-LAST:event_jButton3ActionPerformed
+                                
+    
+    		
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) throws ClassNotFoundException, SQLException, IOException {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(ClientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(ClientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(ClientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(ClientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        //</editor-fold>
+
+        /* Create and display the form */
+        
+        
+        
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    new ClientGUI().setVisible(true);
+                } catch (SQLException ex) {
+                    Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    public static javax.swing.JTextArea chatTxt;
+    private static javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private static javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    public static javax.swing.JTextField msgTxt;
+    public static javax.swing.JList offlineusersList;
+    public static javax.swing.JList onlineList;
+    // End of variables declaration//GEN-END:variables
+}
